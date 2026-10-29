@@ -1,0 +1,8 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function loggedIn() { return request.auth != null; }
+    match /products/{id} { allow read, create, update, delete: if loggedIn(); }
+    match /sales/{id} { allow read, create: if loggedIn(); allow update, delete: if false; }
+  }
+}

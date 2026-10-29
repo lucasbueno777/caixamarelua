@@ -1,0 +1,21 @@
+MAR E LUA — COMO COLOCAR O CAIXA ONLINE
+
+Este projeto tem cadastro com foto e sincronização em tempo real. Para funcionar em vários aparelhos, precisa ser conectado a um projeto Firebase e publicado em um endereço online. O arquivo ainda não contém as chaves do seu projeto, porque elas são específicas da sua conta.
+
+O QUE JÁ ESTÁ PREPARADO
+- Foto escolhida pela galeria/câmera no cadastro do produto.
+- Foto compactada e salva com o produto na nuvem.
+- Produtos, estoque, vendas, histórico e fechamento compartilhados em tempo real.
+- Acesso da equipe por um único e-mail e senha.
+- Visual creme, azul-marinho e dourado, com o logo Mar e Lua.
+
+PARA ATIVAR
+1. É necessário criar/conectar o projeto Firebase da loja (Authentication com e-mail/senha e Firestore Database).
+2. Copiar a configuração do aplicativo Web para firebase-config.js.
+3. Publicar os arquivos em um site HTTPS e adicionar o domínio autorizado no Firebase.
+4. Criar um único usuário para a equipe e usar o mesmo acesso em cada aparelho.
+
+IMPORTANTE
+- Não compartilhe a pasta antes de configurar o Firebase.
+- Não há senha padrão incluída neste projeto; a senha é criada na conta Firebase da loja.
+- Não é possível gerar um link público já sincronizado sem acesso/autorização à conta onde será hospedado.
