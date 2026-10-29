@@ -1,12 +1,216 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f8efd9"><title>Mar e Lua | Caixa do Evento</title><link rel="icon" href="logo-mar-e-lua.png"><link rel="stylesheet" href="style.css"></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#151515">
+  <title>Mar e Lua | Caixa do Evento</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
-<section id="loginView" class="login-screen"><form id="loginForm" class="login-card"><img class="login-logo" src="logo-mar-e-lua.png" alt="Logo Mar e Lua"><p class="eyebrow">ARTIGOS RELIGIOSOS</p><h1>Caixa do evento</h1><p class="login-intro">Acesso da equipe Mar e Lua</p><label>E-mail<input id="email" type="email" required autocomplete="username" placeholder="E-mail da equipe"></label><label>Senha<input id="password" type="password" required autocomplete="current-password" placeholder="Senha compartilhada"></label><button class="primary" type="submit">Entrar no caixa</button><p id="loginError" class="error" role="alert"></p></form></section>
-<div id="app" hidden><header><div class="brand-wrap"><img src="logo-mar-e-lua.png" alt="Mar e Lua" class="header-logo"><div><div class="brand">Mar e Lua</div><small>CAIXA DO EVENTO</small></div></div><div class="header-right"><span id="connection">Conectando...</span><button id="logout" class="ghost">Sair</button></div></header>
-<nav id="nav"><button data-page="caixa" class="active">Caixa</button><button data-page="produtos">Produtos</button><button data-page="historico">Histórico</button><button data-page="fechamento">Fechamento</button></nav><main>
-<section id="page-caixa" class="page"><div class="topline"><div><p class="eyebrow">MAR E LUA · EVENTO</p><h1>Nova venda</h1></div><span id="saleDate" class="date-pill"></span></div><div class="two-col"><div class="panel"><div class="row"><h2>Produtos</h2><input id="search" placeholder="Buscar produto..."></div><div id="catalog" class="catalog"></div></div><div class="panel cart-panel"><h2>Carrinho</h2><div id="cart"></div><label>Desconto (R$)<input id="discount" type="number" min="0" step="0.01" value="0"></label><div class="totals"><div>Subtotal <strong id="subtotal">R$ 0,00</strong></div><div>Desconto <strong id="discountDisplay">R$ 0,00</strong></div><div class="grand">Total <strong id="total">R$ 0,00</strong></div></div><button id="confirmSale" class="primary wide">Confirmar carrinho</button><div id="paymentBox" hidden><h3>Escolha o pagamento</h3><div class="pay-options"><label><input type="radio" name="payment" value="Pix" checked> Pix</label><label><input type="radio" name="payment" value="Débito"> Débito</label><label><input type="radio" name="payment" value="Crédito"> Crédito</label></div><button id="finishSale" class="primary wide">Finalizar venda</button><button id="cancelConfirm" class="ghost wide">Voltar ao carrinho</button></div><p id="saleMessage" role="status"></p></div></div></section>
-<section id="page-produtos" class="page" hidden><div class="topline"><div><p class="eyebrow">CATÁLOGO DA LOJA</p><h1>Produtos e estoque</h1></div></div><div class="two-col products-layout"><form id="productForm" class="panel"><h2 id="productFormTitle">Cadastrar produto</h2><input type="hidden" id="productId"><label>Nome do produto<input id="productName" required maxlength="100" placeholder="Ex.: Vela de 7 dias"></label><label>Preço (R$)<input id="productPrice" type="number" min="0" step="0.01" required placeholder="0,00"></label><label>Estoque disponível<input id="productStock" type="number" min="0" step="1" required placeholder="Quantidade"></label><label class="photo-label">Foto do produto <span class="field-note">Escolha da galeria ou tire uma foto</span><input id="productPhoto" type="file" accept="image/*" capture="environment"></label><img id="productPhotoPreview" class="photo-preview" alt="Prévia da foto do produto" hidden><label>Ou link da foto (opcional)<input id="productPhotoUrl" type="url" placeholder="https://..."></label><p class="hint">A foto selecionada será compactada e salva junto ao produto, para aparecer nos outros aparelhos também.</p><button class="primary wide" type="submit">Salvar produto</button><button class="ghost wide" type="button" id="resetProduct">Limpar formulário</button><p id="productMessage" role="status"></p></form><div class="panel"><h2>Produtos cadastrados</h2><div id="productList"></div></div></div></section>
-<section id="page-historico" class="page" hidden><div class="topline"><div><p class="eyebrow">REGISTROS COMPARTILHADOS</p><h1>Histórico de vendas</h1></div></div><div class="panel"><div id="history"></div></div></section>
-<section id="page-fechamento" class="page" hidden><div class="topline"><div><p class="eyebrow">RESUMO DO EVENTO</p><h1>Fechamento do dia</h1></div><label>Data <input id="reportDate" type="date"></label></div><div id="report" class="panel"></div><div class="actions"><button id="shareReport" class="primary">Compartilhar relatório no WhatsApp</button><button id="printReport" class="ghost">Imprimir / Salvar PDF</button></div><p class="hint">O fechamento reúne as vendas de todos os aparelhos conectados, no horário de Brasília.</p></section>
-</main><footer><img src="logo-mar-e-lua.png" alt=""><span>Sua fé, nossa missão. Axé, luz e proteção sempre!</span></footer></div><script type="module" src="script.js"></script></body></html>
+
+<section id="loginView" class="login-screen">
+  <form id="loginForm" class="login-card">
+    <div class="brand">☾ MAR E LUA ✦</div>
+    <h1>Caixa do evento</h1>
+    <p>Entre com o acesso compartilhado da equipe.</p>
+    <label>E-mail
+      <input id="email" type="email" required autocomplete="username">
+    </label>
+    <label>Senha
+      <input id="password" type="password" required autocomplete="current-password">
+    </label>
+    <button class="primary" type="submit">Entrar</button>
+    <p id="loginError" class="error"></p>
+  </form>
+</section>
+
+<div id="app" hidden>
+  <header>
+    <div>
+      <div class="brand">☾ MAR E LUA ✦</div>
+      <small>CAIXA DO EVENTO</small>
+    </div>
+    <div class="header-right">
+      <span id="connection">Conectando...</span>
+      <button id="logout" class="ghost">Sair</button>
+    </div>
+  </header>
+
+  <nav id="nav">
+    <button data-page="caixa" class="active">Caixa</button>
+    <button data-page="produtos">Produtos</button>
+    <button data-page="historico">Histórico</button>
+    <button data-page="fechamento">Fechamento</button>
+  </nav>
+
+  <main>
+    <section id="page-caixa" class="page">
+      <div class="topline">
+        <h1>Nova venda</h1>
+        <span id="saleDate"></span>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="row">
+            <h2>Produtos</h2>
+            <input id="search" placeholder="Buscar produto...">
+          </div>
+          <div id="catalog" class="catalog"></div>
+        </div>
+
+        <div class="panel cart-panel">
+          <h2>Carrinho</h2>
+          <div id="cart"></div>
+
+          <label>Desconto (R$)
+            <input id="discount" type="number" min="0" step="0.01" value="0">
+          </label>
+
+          <div class="totals">
+            <div>Subtotal <strong id="subtotal">R$ 0,00</strong></div>
+            <div>Desconto <strong id="discountDisplay">R$ 0,00</strong></div>
+            <div class="grand">Total <strong id="total">R$ 0,00</strong></div>
+          </div>
+
+          <button id="confirmSale" class="primary">Confirmar carrinho</button>
+
+          <div id="paymentBox" hidden>
+            <h3>Escolha o pagamento</h3>
+
+            <div class="pay-options">
+              <label>
+                <input type="radio" name="payment" value="Pix" checked>
+                Pix
+              </label>
+
+              <label>
+                <input type="radio" name="payment" value="Dinheiro">
+                Dinheiro
+              </label>
+
+              <label>
+                <input type="radio" name="payment" value="Débito">
+                Débito
+              </label>
+
+              <label>
+                <input type="radio" name="payment" value="Crédito">
+                Crédito à vista
+              </label>
+
+              <label>
+                <input type="radio" name="payment" value="Crédito parcelado">
+                Crédito parcelado
+              </label>
+            </div>
+
+            <div id="installmentsBox" hidden>
+              <label>Parcelas no crédito
+                <select id="installments">
+                  <option value="2">2x</option>
+                  <option value="3">3x</option>
+                  <option value="4">4x</option>
+                  <option value="5">5x</option>
+                  <option value="6">6x</option>
+                  <option value="7">7x</option>
+                  <option value="8">8x</option>
+                  <option value="9">9x</option>
+                  <option value="10">10x</option>
+                  <option value="11">11x</option>
+                  <option value="12">12x</option>
+                </select>
+              </label>
+            </div>
+
+            <button id="finishSale" class="primary">Finalizar venda</button>
+            <button id="cancelConfirm" class="ghost">Voltar ao carrinho</button>
+          </div>
+
+          <p id="saleMessage" role="status"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-produtos" class="page" hidden>
+      <div class="topline">
+        <h1>Produtos e estoque</h1>
+      </div>
+
+      <div class="two-col products-layout">
+        <form id="productForm" class="panel">
+          <h2 id="productFormTitle">Cadastrar produto</h2>
+
+          <input type="hidden" id="productId">
+
+          <label>Nome
+            <input id="productName" required maxlength="100">
+          </label>
+
+          <label>Preço (R$)
+            <input id="productPrice" type="number" min="0" step="0.01" required>
+          </label>
+
+          <label>Estoque disponível
+            <input id="productStock" type="number" min="0" step="1" required>
+          </label>
+
+          <label>Foto do produto (arquivo)
+            <input id="productPhoto" type="file" accept="image/*">
+          </label>
+
+          <label>Ou URL da foto
+            <input id="productPhotoUrl" type="url" placeholder="https://...">
+          </label>
+
+          <p class="hint">
+            Fotos enviadas vão para o Firebase Storage. Se preferir, use URL pública de imagem.
+          </p>
+
+          <button class="primary" type="submit">Salvar produto</button>
+          <button class="ghost" type="button" id="resetProduct">Limpar formulário</button>
+          <p id="productMessage" role="status"></p>
+        </form>
+
+        <div class="panel">
+          <h2>Produtos cadastrados</h2>
+          <div id="productList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-historico" class="page" hidden>
+      <h1>Histórico de vendas</h1>
+      <div class="panel">
+        <div id="history"></div>
+      </div>
+    </section>
+
+    <section id="page-fechamento" class="page" hidden>
+      <div class="topline">
+        <h1>Fechamento do dia</h1>
+        <label>Data
+          <input id="reportDate" type="date">
+        </label>
+      </div>
+
+      <div id="report" class="panel"></div>
+
+      <div class="actions">
+        <button id="shareReport" class="primary">Enviar relatório completo pelo WhatsApp</button>
+        <button id="printReport" class="ghost">Imprimir / Salvar PDF</button>
+      </div>
+
+      <p class="hint">
+        O relatório considera as vendas registradas na data escolhida, no horário de Brasília.
+      </p>
+    </section>
+  </main>
+
+  <footer>A força do mar e a sabedoria da lua em harmonia.</footer>
+</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
