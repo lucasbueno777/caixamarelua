@@ -1,3 +1,4 @@
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { getFirestore, collection, doc, onSnapshot, runTransaction, serverTimestamp, deleteDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
@@ -15,6 +16,10 @@ const CLOUDINARY_CLOUD_NAME = 'uwg5ge8x';
 const CLOUDINARY_UPLOAD_PRESET = 'marelua_produtos';
 
 let products = [], sales = [], cart = {}, confirmed = false, busy = false, unsubs = [], connected = { products: false, sales: false };
+
+// Controle da ordenação manual
+let draggingProductId = null;
+let savingProductOrder = false;
 
 const dateKey = (d = new Date()) => {
     const parts = Object.fromEntries(
@@ -77,6 +82,18 @@ onAuthStateChanged(auth, user => {
 
     unsubs.push(onSnapshot(collection(db, 'products'), snapshot => {
         products = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
+            const aManual = typeof a.sortOrder === 'number' && Number.isFinite(a.sortOrder);
+            const bManual = typeof b.sortOrder === 'number' && Number.isFinite(b.sortOrder);
+
+            // Produtos com ordem manual ficam na posição salva.
+            if (aManual && bManual && a.sortOrder !== b.sortOrder) {
+                return a.sortOrder - b.sortOrder;
+            }
+
+            // Produtos novos, ainda sem posição manual, ficam no final.
+            if (aManual && !bManual) return -1;
+            if (!aManual && bManual) return 1;
+
             const ta = a.createdAt?.toMillis?.() ?? a.createdAt?.seconds * 1000;
             const tb = b.createdAt?.toMillis?.() ?? b.createdAt?.seconds * 1000;
 
@@ -123,9 +140,144 @@ function renderProducts() {
         .join('') || '<p>Nenhum produto encontrado.</p>';
 
     $('productList').innerHTML = products
-        .map(p => `<div class="list-line">${p.photoUrl ? `<img src="${escapeHtml(p.photoUrl)}" alt="">` : ''}<div class="details"><b>${escapeHtml(p.name)}</b><br><small>${money(p.price)} • Estoque: ${p.stock}</small></div><div class="buttons"><button class="smallbtn" data-edit="${p.id}">Editar</button><button class="smallbtn" data-delete="${p.id}">Excluir</button></div></div>`)
+        .map(p => `<div class="list-line" data-sort-id="${escapeHtml(p.id)}" style="position:relative">
+            ${p.photoUrl ? `<img src="${escapeHtml(p.photoUrl)}" alt="">` : ''}
+            <div class="details"><b>${escapeHtml(p.name)}</b><br><small>${money(p.price)} • Estoque: ${p.stock}</small></div>
+            <div class="buttons">
+                <button type="button" class="smallbtn" data-drag-handle="${escapeHtml(p.id)}" aria-label="Arrastar ${escapeHtml(p.name)}" title="Segure para arrastar" style="cursor:grab;touch-action:none">☰</button>
+                <button class="smallbtn" data-edit="${escapeHtml(p.id)}">Editar</button>
+                <button class="smallbtn" data-delete="${escapeHtml(p.id)}">Excluir</button>
+            </div>
+        </div>`)
         .join('') || '<p>Cadastre seu primeiro produto.</p>';
 }
+
+// ==========================================
+// ORDENAÇÃO MANUAL DOS PRODUTOS
+// ==========================================
+
+// Salva a nova ordem de todos os produtos no Firebase.
+async function saveProductOrder(ids) {
+    if (savingProductOrder) return;
+
+    savingProductOrder = true;
+
+    try {
+        await runTransaction(db, async tx => {
+            const refs = ids.map(id => doc(db, 'products', id));
+            const snapshots = [];
+
+            // Todas as leituras acontecem antes das gravações.
+            for (const ref of refs) {
+                snapshots.push(await tx.get(ref));
+            }
+
+            for (let i = 0; i < snapshots.length; i++) {
+                if (!snapshots[i].exists()) {
+                    throw Error('Um produto foi removido durante a ordenação. Atualize a página e tente novamente.');
+                }
+            }
+
+            for (let i = 0; i < refs.length; i++) {
+                tx.update(refs[i], {
+                    sortOrder: i
+                });
+            }
+        });
+    } finally {
+        savingProductOrder = false;
+    }
+}
+
+// Inicia o arraste pelo botão de alça.
+$('productList').addEventListener('pointerdown', e => {
+    const handle = e.target.closest('[data-drag-handle]');
+    if (!handle || savingProductOrder) return;
+
+    const row = handle.closest('[data-sort-id]');
+    if (!row) return;
+
+    e.preventDefault();
+
+    draggingProductId = row.dataset.sortId;
+    row.style.opacity = '0.45';
+    row.style.outline = '2px dashed #bb985e';
+    row.style.zIndex = '10';
+});
+
+// Move o produto conforme a posição do dedo ou mouse.
+document.addEventListener('pointermove', e => {
+    if (!draggingProductId) return;
+
+    e.preventDefault();
+
+    const dragged = [...$('productList').querySelectorAll('[data-sort-id]')]
+        .find(row => row.dataset.sortId === draggingProductId);
+
+    if (!dragged) return;
+
+    const element = document.elementFromPoint(e.clientX, e.clientY);
+    const target = element?.closest('[data-sort-id]');
+
+    if (!target || target === dragged || ! $('productList').contains(target)) return;
+
+    const rect = target.getBoundingClientRect();
+    const insertAfter = e.clientY > rect.top + rect.height / 2;
+
+    if (insertAfter) {
+        target.after(dragged);
+    } else {
+        target.before(dragged);
+    }
+}, { passive: false });
+
+// Finaliza o arraste e grava a ordem.
+document.addEventListener('pointerup', async () => {
+    if (!draggingProductId) return;
+
+    const dragged = [...$('productList').querySelectorAll('[data-sort-id]')]
+        .find(row => row.dataset.sortId === draggingProductId);
+
+    if (dragged) {
+        dragged.style.opacity = '';
+        dragged.style.outline = '';
+        dragged.style.zIndex = '';
+    }
+
+    draggingProductId = null;
+
+    const rows = [...$('productList').querySelectorAll('[data-sort-id]')];
+    const ids = rows.map(row => row.dataset.sortId);
+
+    if (!ids.length) return;
+
+    const previousProducts = [...products];
+
+    products = ids
+        .map(id => products.find(p => p.id === id))
+        .filter(Boolean);
+
+    renderProducts();
+
+    try {
+        await saveProductOrder(ids);
+    } catch (err) {
+        products = previousProducts;
+        renderProducts();
+        alert('Não foi possível salvar a ordem dos produtos: ' + err.message);
+    }
+});
+
+document.addEventListener('pointercancel', () => {
+    if (!draggingProductId) return;
+
+    draggingProductId = null;
+    renderProducts();
+});
+
+// ==========================================
+// FIM DA ORDENAÇÃO MANUAL
+// ==========================================
 
 $('search').oninput = renderProducts;
 
